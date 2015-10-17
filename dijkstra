@@ -1,0 +1,159 @@
+#include<iostream>
+using namespace std;
+#define max 1000
+class NODE
+{
+        int data;
+        NODE *next;
+public:
+
+        NODE(int val=0,NODE *link=NULL)
+        {
+                data=val;
+                next=link;
+        }
+        NODE *insert(int val)
+        {
+                NODE *temp=this;
+                temp->next=new NODE(val,temp->next);
+                return this;
+        }
+        void printList()
+        {
+                NODE *temp=this->next;
+                while(temp)
+                {
+                        cout<<"v-"<<temp->data<<'\t';
+                        temp=temp->next;
+                }
+        }
+        friend class GRAPH;
+};
+class GRAPH:public NODE
+{
+        NODE **t;
+        int *MARK;
+        int vertex;
+        char **cost;
+public:
+        GRAPH(int n)
+        {
+                vertex=n;
+                t=new NODE*[n];
+                for(int i=0;i<n;i++)
+                        t[i]=new NODE(i,NULL);
+                MARK=new int[n];
+                cost=new char*[n];
+                for(int i=0;i<n;i++)
+                        cost[i]=new char[n];
+        }
+        void createGraph(int **a)
+        {
+                for(int i=0;i<vertex;i++)
+                        for(int j=0;j<vertex;j++)
+                                if(a[i][j])
+                                        t[i]=t[i]->insert(j);
+        }
+        void displayGraph()
+        {
+                for(int i=0;i<vertex;i++)
+                {
+                        cout<<'['<<i<<"]:\t";
+                        t[i]->printList();
+                        cout<<endl;
+                }
+        }
+        NODE *Vertex()
+        {
+                return t[0];
+        }
+        void Cost(int **g)
+        {
+                for(int i=0;i<vertex;i++)
+                        for(int j=0;j<vertex;j++)
+                                if(g[i][j])
+                                {
+                                        char w;
+                                        cout<<"\nEnter the weight between "<<i<<" and "<<j<<": ";
+                                        cin>>w;
+                                        cost[i][j]=w;
+                                }
+                                else
+                                        cost[i][j]='i';
+                for(int i=0;i<vertex;i++)
+                {
+                        for(int j=0;j<vertex;j++)
+                                cout<<cost[i][j]<<'\t';
+                        cout<<endl;
+                }
+        }
+        int minimum(int a,int b)
+        {
+                return (a<b)?a:b;
+        }
+        void shortestPath()
+        {
+                int *dist; dist=new int[vertex];
+                for(int i=0;i<vertex;i++)
+                        dist[i]=cost[0][i]-'0';
+                for(int i=0;i<vertex;i++)
+                        MARK[i]=0;
+                MARK[0]=1;
+                int *s;
+                s=new int[vertex];
+                int l=1,b=0,i=0,a=0;
+                s[0]=0;char min='i';
+                while(l<vertex)
+                {
+                        for(int i=0;i<vertex;i++)
+                               for(int j=0;j<vertex;j++)
+                                        if(cost[s[i]][j]<min)
+                                            if(!MARK[j])
+                                            {
+                                                 min=cost[s[i]][j];
+                                                 b=j;a=i;
+                                            }
+                        s[l]=b;
+                        MARK[s[l]]=1;l++;min='i';
+                        dist[b]=minimum(dist[b],dist[a]+cost[a][b]-'0');
+                }
+                dist[0]=0;
+                for(int i=0;i<vertex;i++)
+                        cout<<'v'<<i<<':'<<dist[i]<<'\t';
+                cout<<endl;
+        }
+};
+int main()
+{
+        int n,t,h;
+        int **graph;
+        cout<<"Enter the number of vertices: ";
+        cin>>n;
+        graph=new int*[n];
+        for(int i=0;i<n;i++)
+                graph[i]=new int[n];
+        for(int i=0;i<n;i++)
+                for(int j=0;j<n;j++)
+                        graph[i][j]=0;
+        cout<<"Enter the edges: ";
+        while(1)
+        {
+                cin>>t>>h;
+                if(t>=n || h>=n) break;
+                graph[t][h]=1;
+        }
+        cout<<"Adjacency Matrix:\n";
+        for(int i=0;i<n;i++)
+        {
+                for(int j=0;j<n;j++)
+                        cout<<graph[i][j]<<'\t';
+                cout<<'\n';
+        }
+        GRAPH g(n);
+        g.createGraph(graph);
+        cout<<"Adjacency List:\n";
+        g.displayGraph();
+        g.Cost(graph);
+        g.shortestPath();
+        return 1;
+}
